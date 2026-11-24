@@ -29,8 +29,16 @@ def main() -> int:
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "wb") as fh:
         fh.write(data)
+    # Read-back verification: the bytes on disk must match the
+    # entry exactly, otherwise the run is a failure, not a success.
+    with open(OUT, "rb") as fh:
+        written = fh.read()
+    if written != data:
+        print(f"read-back mismatch: {len(written)} bytes on disk, "
+              f"expected {len(data)}", file=sys.stderr)
+        return 1
     print(f"wrote {len(data)} bytes to {OUT} "
-          f"sha256={hashlib.sha256(data).hexdigest()}")
+          f"sha256={hashlib.sha256(data).hexdigest()} (read-back verified)")
     return 0
 
 
